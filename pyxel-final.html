@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYXEL — Strategic Design & Marketing Operations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060606;--bg2:#0c0c0c;--card:#111;--text:#e8e6e1;--muted:#5a5854;--accent:#d4ff00;--red:#ff3333;--border:rgba(255,255,255,.06);--fd:'Instrument Serif',serif;--fh:'Syne',sans-serif;--fm:'Space Mono',monospace;--fb:'DM Sans',sans-serif}
+html{scroll-behavior:auto}body{background:var(--bg);color:var(--text);font-family:var(--fb);font-weight:300;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased;cursor:none}
+::selection{background:var(--accent);color:var(--bg)}a{color:inherit;text-decoration:none;cursor:none}button{cursor:none}img{display:block;max-width:100%}
+
+.c-d{position:fixed;width:6px;height:6px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:10001;transform:translate(-50%,-50%);transition:width .25s,height .25s}
+.c-r{position:fixed;width:44px;height:44px;border:1px solid rgba(212,255,0,.25);border-radius:50%;pointer-events:none;z-index:10000;transform:translate(-50%,-50%);transition:width .25s,height .25s,border-color .25s}
+body.c-h .c-d{width:10px;height:10px}body.c-h .c-r{width:64px;height:64px;border-color:rgba(212,255,0,.4)}
+
+.intro{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem}
+.intro-s{font-family:var(--fm);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);opacity:0}
+.intro-l{font-family:var(--fh);font-weight:800;font-size:2.2rem;letter-spacing:.3em;text-transform:uppercase;color:var(--text);opacity:0;transform:scale(.95)}
+.intro-l span{color:var(--accent)}
+.intro-bw{width:200px;height:1px;background:rgba(255,255,255,.06);overflow:hidden;opacity:0}
+.intro-b{height:100%;background:var(--accent);width:0%;transition:width 1s cubic-bezier(.16,1,.3,1)}
+.intro-c{font-family:var(--fm);font-size:.5rem;letter-spacing:.3em;text-transform:uppercase;color:var(--red);opacity:0}
+.intro.p1 .intro-s{animation:iF .4s ease forwards}
+.intro.p1 .intro-l{animation:iL .6s ease .3s forwards}
+.intro.p1 .intro-bw{animation:iF .3s ease .5s forwards}
+.intro.p1 .intro-b{width:100%;transition-delay:.7s}
+.intro.p1 .intro-c{animation:iF .3s ease 1.2s forwards}
+.intro.out{animation:iO .6s cubic-bezier(.76,0,.24,1) .3s forwards}
+@keyframes iF{to{opacity:1}}@keyframes iL{to{opacity:1;transform:scale(1)}}@keyframes iO{to{opacity:0;transform:scale(1.02)}}
+
+.grid-ov{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.018}
+.grid-ov::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0,rgba(255,255,255,.03) 1px,transparent 1px,transparent calc(100%/12))}
+
+.hud{position:fixed;z-index:50;font-family:var(--fm);font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);opacity:0}
+.hud-tl{top:5.5rem;left:2.5rem}.hud-tr{top:5.5rem;right:2.5rem}.hud-bl{bottom:1.5rem;left:2.5rem}.hud-br{bottom:1.5rem;right:2.5rem}
+.hud.on{animation:iF .8s ease forwards}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:500;padding:1.2rem 2.5rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);background:rgba(6,6,6,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);opacity:0;transform:translateY(-10px)}
+nav.show{animation:nI .6s ease forwards}@keyframes nI{to{opacity:1;transform:translateY(0)}}
+.nb{font-family:var(--fh);font-weight:800;font-size:.9rem;letter-spacing:.2em;text-transform:uppercase}.nb span{color:var(--accent)}
+.nb-t{font-family:var(--fm);font-size:.45rem;letter-spacing:.2em;color:var(--muted);padding:.2rem .5rem;border:1px solid var(--border);margin-left:.5rem}
+.nr{display:flex;align-items:center;gap:2rem}
+.nr a{font-family:var(--fm);font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);transition:color .3s}.nr a:hover{color:var(--accent)}
+.nm{font-family:var(--fm);font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--bg);background:var(--accent);border:none;padding:.5rem 1.2rem;transition:all .3s}.nm:hover{background:#fff}
+
+.m-ov{position:fixed;inset:0;z-index:400;background:rgba(6,6,6,.97);backdrop-filter:blur(40px);opacity:0;pointer-events:none;transition:opacity .4s}
+.m-ov.open{opacity:1;pointer-events:all}
+.m-ov-c{position:absolute;top:1.2rem;right:2.5rem;font-family:var(--fm);font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--bg);background:var(--accent);border:none;padding:.5rem 1.2rem;z-index:10;transition:all .3s}.m-ov-c:hover{background:#fff}
+.ml{height:100%;display:flex;flex-direction:column;justify-content:center;padding:0 2.5rem;gap:.3rem}
+.ml a{font-family:var(--fh);font-size:clamp(2.5rem,6vw,5rem);font-weight:800;letter-spacing:.05em;text-transform:uppercase;display:flex;align-items:baseline;gap:1rem;transform:translateX(-30px);opacity:0;transition:color .3s}
+.m-ov.open .ml a{animation:mIn .6s cubic-bezier(.16,1,.3,1) forwards}
+.m-ov.open .ml a:nth-child(1){animation-delay:.08s}.m-ov.open .ml a:nth-child(2){animation-delay:.14s}.m-ov.open .ml a:nth-child(3){animation-delay:.2s}.m-ov.open .ml a:nth-child(4){animation-delay:.26s}
+.ml a:hover{color:var(--accent)}.ml .mn{font-family:var(--fm);font-size:.55rem;color:var(--muted)}
+@keyframes mIn{to{opacity:1;transform:translateX(0)}}
+
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 2.5rem 5rem;position:relative}
+.hero-l{font-family:var(--fm);font-size:.5rem;letter-spacing:.35em;text-transform:uppercase;color:var(--accent);margin-bottom:2rem;display:flex;align-items:center;gap:1rem;opacity:0}
+.hero-l::before{content:'';width:30px;height:1px;background:var(--accent)}.hero-l.in{animation:fU .7s ease forwards}
+.hero h1{font-family:var(--fh);font-size:clamp(2.5rem,6.5vw,6rem);font-weight:800;line-height:.95;letter-spacing:-.01em;text-transform:uppercase;margin-bottom:2rem}
+.hero h1 .w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.06em;margin-right:.15em}
+.hero h1 .wi{display:inline-block;transform:translateY(120%);opacity:0;filter:blur(6px)}.hero h1 .wi.in{animation:wI .9s cubic-bezier(.16,1,.3,1) forwards}
+.hero h1 .acc{color:var(--accent)}
+@keyframes wI{to{transform:translateY(0);opacity:1;filter:blur(0)}}
+.hero-sub{max-width:550px;font-size:.88rem;color:var(--muted);line-height:1.75;opacity:0;transform:translateY(20px)}.hero-sub.in{animation:fU .8s ease forwards}
+.hero-m{position:absolute;bottom:5rem;right:2.5rem;text-align:right;opacity:0}.hero-m.in{animation:fU .8s ease .5s forwards}
+.hero-m h3{font-family:var(--fh);font-size:3rem;font-weight:800;color:var(--accent);line-height:1}
+.hero-m p{font-family:var(--fm);font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:.3rem}
+.hero-sc{position:absolute;bottom:2rem;left:2.5rem;font-family:var(--fm);font-size:.5rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:1rem;opacity:0}.hero-sc.in{animation:iF 1s ease 2s forwards}
+.hero-sc .ln{width:40px;height:1px;background:var(--muted);position:relative;overflow:hidden}
+.hero-sc .ln::after{content:'';position:absolute;inset:0;background:var(--accent);animation:sL 2.5s ease-in-out infinite}
+@keyframes sL{0%{transform:translateX(-100%)}50%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+@keyframes fU{to{opacity:1;transform:translateY(0)}}
+
+.mission{border-top:1px solid var(--border);border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr}
+.mc{padding:2rem 2.5rem;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem}.mc:last-child{border-right:none}
+.mc h4{font-family:var(--fm);font-size:.5rem;letter-spacing:.25em;text-transform:uppercase;color:var(--accent)}
+.mc p{font-size:.82rem;color:var(--muted);line-height:1.6}
+
+.car{padding:3rem 0;overflow:hidden;border-bottom:1px solid var(--border)}
+.car-l{font-family:var(--fm);font-size:.5rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:1.5rem}
+.ct{display:flex;gap:1rem;animation:mq 28s linear infinite;width:max-content}.ct:hover{animation-play-state:paused}
+.bp{flex-shrink:0;font-family:var(--fm);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text);padding:.5rem 1.1rem;border:1px solid var(--border);opacity:.3;transition:all .3s;white-space:nowrap}.bp:hover{opacity:1;border-color:var(--accent);color:var(--accent)}
+@keyframes mq{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+.sh{padding:4rem 2.5rem 2rem;display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--border)}
+.sh h2{font-family:var(--fm);font-size:.55rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}.sh .cnt{font-family:var(--fm);font-size:.55rem;color:var(--accent)}
+
+.projects{padding:2rem 2.5rem 4rem}
+.pc{display:block;margin-bottom:2rem;border:1px solid var(--border);overflow:hidden;background:var(--card);transition:transform .5s ease,border-color .35s;position:relative;will-change:transform}
+.pc::after{content:'';position:absolute;inset:0;box-shadow:0 30px 60px rgba(0,0,0,.4);opacity:0;transition:opacity .5s;pointer-events:none;z-index:-1}
+.pc:hover{transform:translateY(-4px);border-color:rgba(212,255,0,.12)}.pc:hover::after{opacity:1}
+.pc-cl{position:absolute;top:1.2rem;right:1.2rem;font-family:var(--fm);font-size:.45rem;letter-spacing:.2em;text-transform:uppercase;padding:.2rem .6rem;z-index:5;opacity:.7;transition:opacity .3s}
+.pc-cl.red{color:var(--red);border:1px solid var(--red)}.pc-cl.green{color:var(--accent);border:1px solid var(--accent)}
+.pc:hover .pc-cl{opacity:1}
+.pc-img{width:100%;overflow:hidden}
+.pc-img img{width:100%;aspect-ratio:16/9;object-fit:cover;transition:transform .6s ease;transform:translateZ(0)}
+.pc:hover .pc-img img{transform:scale(1.03) translateZ(0)}
+.pc-bar{padding:1.2rem 1.8rem;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border)}
+.pc-bar h3{font-family:var(--fh);font-size:.85rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;transition:color .3s}.pc:hover .pc-bar h3{color:var(--accent)}
+.pc-desc{padding:0 1.8rem 1.2rem;font-size:.78rem;color:var(--muted);line-height:1.65;max-width:600px}
+.pills{display:flex;gap:.4rem;flex-wrap:wrap}
+.pill{font-family:var(--fm);font-size:.45rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:.3rem .7rem;border:1px solid var(--border);transition:all .3s}
+.pc:hover .pill{border-color:rgba(212,255,0,.15);color:var(--text)}
+.pp{display:grid;grid-template-columns:1fr 1fr;gap:2rem}
+.pc-year{font-family:var(--fm);font-size:.5rem;letter-spacing:.15em;color:var(--muted);margin-left:auto;padding-left:1rem}
+
+.process{padding:4rem 2.5rem;border-top:1px solid var(--border)}
+.pg{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+.ps{padding:2.5rem 2rem;border-right:1px solid var(--border);position:relative}.ps:last-child{border-right:none}
+.ps::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.16,1,.3,1)}.ps:hover::after{transform:scaleX(1)}
+.pn{font-family:var(--fm);font-size:.5rem;letter-spacing:.2em;color:var(--accent);margin-bottom:1.5rem}
+.ps h3{font-family:var(--fh);font-size:.9rem;font-weight:700;text-transform:uppercase;margin-bottom:.8rem}
+.ps p{font-size:.78rem;color:var(--muted);line-height:1.7}
+
+.about{padding:6rem 2.5rem;display:grid;grid-template-columns:auto 1fr;gap:4rem;align-items:center;border-top:1px solid var(--border)}
+.ap{width:220px;height:220px;border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--card)}
+.ap img{width:100%;height:100%;object-fit:cover}
+.ap span{font-family:var(--fh);font-size:6rem;font-weight:800;color:rgba(212,255,0,.04)}
+.at .al{font-family:var(--fm);font-size:.5rem;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);margin-bottom:1.5rem}
+.at h2{font-family:var(--fh);font-size:clamp(1.3rem,2.5vw,2rem);font-weight:700;text-transform:uppercase;line-height:1.3;margin-bottom:1.5rem}.at h2 em{color:var(--accent);font-style:normal}
+.at p{font-size:.85rem;color:var(--muted);line-height:1.8;margin-bottom:1rem;max-width:550px}
+.sr{display:flex;gap:3rem;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+.st h4{font-family:var(--fh);font-size:1.5rem;font-weight:800;color:var(--accent)}.st p{font-family:var(--fm);font-size:.45rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:.2rem}
+
+.contact{padding:6rem 2.5rem;border-top:1px solid var(--border)}
+.cg{display:grid;grid-template-columns:1fr 1.2fr;gap:5rem}
+.cl h2{font-family:var(--fh);font-size:clamp(1.5rem,3vw,2.5rem);font-weight:700;text-transform:uppercase;line-height:1.2;margin-bottom:1.5rem}.cl h2 em{color:var(--accent);font-style:normal}
+.cl>p{color:var(--muted);font-size:.85rem;line-height:1.7;margin-bottom:2rem}
+.ck{display:flex;flex-direction:column;gap:.6rem}
+.ck a{font-family:var(--fm);font-size:.65rem;letter-spacing:.08em;display:flex;align-items:center;gap:.8rem;transition:color .3s;text-transform:uppercase}.ck a:hover{color:var(--accent)}
+.cb{font-size:.5rem;letter-spacing:.2em;color:var(--muted);width:55px}
+.cf{display:flex;flex-direction:column;gap:1.4rem}
+.fg label{display:block;font-family:var(--fm);font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.fg input,.fg textarea,.fg select{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);padding:.7rem 0;color:var(--text);font-family:var(--fb);font-size:.85rem;font-weight:300;outline:none;transition:border-color .3s;border-radius:0;-webkit-appearance:none}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--accent)}.fg textarea{resize:vertical;min-height:80px}
+.fg select{cursor:none}.fg select option{background:var(--card);color:var(--text)}
+.fgr{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.btn-s{display:inline-flex;align-items:center;gap:.7rem;background:var(--accent);color:var(--bg);border:none;padding:.9rem 2.2rem;font-family:var(--fh);font-size:.6rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;transition:all .3s;align-self:flex-start;margin-top:.5rem;will-change:transform}
+.btn-s:hover{background:#fff;transform:translateY(-2px)}
+.btn-s svg{transition:transform .3s}.btn-s:hover svg{transform:translateX(4px)}
+
+footer{padding:2.5rem;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr;gap:2rem}
+.fc h4{font-family:var(--fm);font-size:.45rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem}
+.fc p,.fc a{font-family:var(--fm);font-size:.55rem;letter-spacing:.05em;text-transform:uppercase;color:var(--text);display:block;margin-bottom:.3rem;transition:color .3s}.fc a:hover{color:var(--accent)}
+.fb{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;padding-top:1.5rem;border-top:1px solid var(--border);margin-top:1rem}
+.fb span{font-family:var(--fm);font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.btt{font-family:var(--fm);font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);background:none;border:none;transition:color .3s}.btt:hover{color:var(--accent)}
+
+.rv{opacity:0;transform:translateY(40px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}.rv.v{opacity:1;transform:translateY(0)}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:8000;opacity:.02;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");background-repeat:repeat;background-size:180px}
+
+@media(max-width:1000px){.pg{grid-template-columns:1fr 1fr}.ps:nth-child(2){border-right:none}.ps:nth-child(3),.ps:nth-child(4){border-top:1px solid var(--border)}.mission{grid-template-columns:1fr}.mc{border-right:none;border-bottom:1px solid var(--border)}.mc:last-child{border-bottom:none}}
+@media(max-width:900px){.pp{grid-template-columns:1fr}.about{grid-template-columns:1fr;gap:2rem;text-align:center}.ap{width:160px;height:160px;margin:0 auto}.at p{max-width:100%}.sr{justify-content:center}.cg{grid-template-columns:1fr;gap:3rem}footer{grid-template-columns:1fr}.hud{display:none}.hero-m{display:none}}
+@media(max-width:600px){nav{padding:1rem 1.5rem}.nr a{display:none}.hero{padding:0 1.5rem 4rem}.projects,.about,.contact,.process{padding-left:1.5rem;padding-right:1.5rem}.sh{padding-left:1.5rem;padding-right:1.5rem}footer{padding:2rem 1.5rem}.fgr{grid-template-columns:1fr}.pills{display:none}.c-d,.c-r{display:none}body,a,button{cursor:auto}.pc::after{display:none}.pg{grid-template-columns:1fr}.ps{border-right:none;border-bottom:1px solid var(--border)}.ps:last-child{border-bottom:none}.grid-ov{display:none}.pc-desc{display:none}}
+</style>
+</head>
+<body>
+<div class="c-d" id="cD"></div><div class="c-r" id="cR"></div><div class="grid-ov"></div>
+<div class="hud hud-tl" id="h1">48.2082&deg; N / 16.3738&deg; E</div>
+<div class="hud hud-tr" id="h2">SYS:ACTIVE // PYXEL.AT</div>
+<div class="hud hud-bl" id="h3">FULL-SPECTRUM DESIGN OPS</div>
+<div class="hud hud-br" id="h4">&copy; 2026 // CLASSIFIED</div>
+
+<div class="intro" id="intro"><div class="intro-s">Initializing design system&hellip;</div><div class="intro-l">PY<span>X</span>EL</div><div class="intro-bw"><div class="intro-b"></div></div><div class="intro-c">Classified &mdash; Strategic Design Operations</div></div>
+
+<div class="m-ov" id="mOv"><button class="m-ov-c" onclick="tM()">Close</button><div class="ml"><a href="#" onclick="cS(event,'top')"><span class="mn">01</span> Home</a><a href="#proj" onclick="cS(event,'proj')"><span class="mn">02</span> Operations</a><a href="#about" onclick="cS(event,'about')"><span class="mn">03</span> Intel</a><a href="#contact" onclick="cS(event,'contact')"><span class="mn">04</span> Contact</a></div></div>
+
+<nav id="nav"><a href="#" class="nb">PY<span>X</span>EL<span class="nb-t">Wien</span></a><div class="nr"><a href="#proj">Operations</a><a href="#about">Intel</a><a href="#contact">Comms</a><button class="nm" onclick="tM()">Menu</button></div></nav>
+
+<section class="hero">
+  <div class="hero-l" id="hL">Strategic Design &amp; Marketing Operations</div>
+  <h1 id="hH"><span class="w"><span class="wi">We</span></span> <span class="w"><span class="wi">don't</span></span> <span class="w"><span class="wi">do</span></span> <span class="w"><span class="wi">projects.</span></span><br><span class="w"><span class="wi">We</span></span> <span class="w"><span class="wi">run</span></span> <span class="w"><span class="wi acc">operations.</span></span></h1>
+  <p class="hero-sub" id="hS">Full-spectrum Brand &amp; Marketing Engineering. Von Rebranding und CI bis zur laufenden Marketingbegleitung. Maximale Konzentration auf wenige Projekte &mdash; bis sie perfekt sind.</p>
+  <div class="hero-m" id="hM"><h3>&le;5</h3><p>Active operations at any time</p></div>
+  <div class="hero-sc" id="hSc"><div class="ln"></div> Scroll</div>
+</section>
+
+<div class="mission rv"><div class="mc"><h4>Doctrine</h4><p>Keine halben Sachen. Wenige Projekte, jedes mit absoluter Pr&auml;zision bis zum letzten Pixel.</p></div><div class="mc"><h4>Scope</h4><p>Full-Spectrum: Rebranding, CI, Web, Marketing, Social, Print, AI &mdash; alles aus einer Hand.</p></div><div class="mc"><h4>Outcome</h4><p>Keine Templates. Jedes Projekt von Grund auf ma&szlig;geschneidert und strategisch durchdacht.</p></div></div>
+
+<div class="car rv"><div class="car-l">Cleared Operations</div><div class="ct"><span class="bp">Oakley</span><span class="bp">McDonald's</span><span class="bp">Moonlite</span><span class="bp">Gr&uuml;nes Kreuz</span><span class="bp">Resani</span><span class="bp">Primonia</span><span class="bp">Spotify</span><span class="bp">VaLea</span><span class="bp">Profalting</span><span class="bp">Art Club</span><span class="bp">WeMedia</span><span class="bp">Curlz</span><span class="bp">FITINN</span><span class="bp">Kleinwasserkraft</span><span class="bp">Oakley</span><span class="bp">McDonald's</span><span class="bp">Moonlite</span><span class="bp">Gr&uuml;nes Kreuz</span><span class="bp">Resani</span><span class="bp">Primonia</span><span class="bp">Spotify</span><span class="bp">VaLea</span><span class="bp">Profalting</span><span class="bp">Art Club</span><span class="bp">WeMedia</span><span class="bp">Curlz</span><span class="bp">FITINN</span><span class="bp">Kleinwasserkraft</span></div></div>
+
+<div class="sh rv" id="proj"><h2>Active &amp; Completed Operations</h2><span class="cnt">14</span></div>
+<div class="projects">
+
+<!-- 1: GSS by Oakley -->
+<a class="pc rv" href="#">
+  <span class="pc-cl green">Featured 2024</span>
+  <div class="pc-img"><img src="https://cdn.myportfolio.com/54ead3db-6601-4fb9-8aec-e32e07141dba/a88c3e0a-c220-4d54-b032-44345d4cd21b_rwc_0x0x1916x1080x32.png?h=fbe3dcdc7ac066b8bb3ae0f1c6e1e9bc" alt="GSS by Oakley" loading="lazy"></div>
+  <div class="pc-bar"><h3>GSS by Oakley&reg;</h3><div class="pills"><span class="pill">Branding</span><span class="pill">Campaign</span><span class="pill">Visual Identity</span></div></div>
+  <p class="pc-desc">Entwicklung einer umfassenden visuellen Kampagne f&uuml;r die Global Sports Solutions Linie von Oakley. Konzeption von Key Visuals, digitalen Assets und Markenkommunikation f&uuml;r den europ&auml;ischen Markt.</p>
+</a>
+
+<!-- 2 + 3: McDonald's & Moonlite -->
+<div class="pp">
+<a class="pc rv" href="#">
+  <span class="pc-cl green">2024</span>
+  <div class="pc-img"><img src="https://cdn.myportfolio.com/54ead3db-6601-4fb9-8aec-e32e07141dba/0ba0de18-5ec2-4b43-ac42-49ccfbb743c0_rwc_0x11x824x464x32.png?h=b117cf04c1432c23a07f8a0b6044087b" alt="McDonald's" loading="lazy"></div>
+  <div class="pc-bar"><h3>McDonald's</h3><div class="pills"><span class="pill">Marketing</span><span class="pill">Design</span></div></div>
+  <p class="pc-desc">Kreative Marketingkonzepte und grafische Umsetzung f&uuml;r ausgew&auml;hlte McDonald's Kampagnen. Fokus auf Brand-Consistency und wirkungsvolle visuelle Kommunikation.</p>
+</a>
+<a class="pc rv" href="#">
+  <span class="pc-cl green">2025</span>
+  <div class="pc-img"><img src="https://cdn.myportfolio.com/54ead3db-6601-4fb9-8aec-e32e07141dba/a33476ba-693d-45a7-aa1e-72f74a54cd39_rwc_0x192x3840x2164x32.jpg?h=ca99fa0a43a5faac300c98b8027a1b2d" alt="Moonlite Drink" loading="lazy"></div>
+  <div class="pc-bar"><h3>Moonlite Drink</h3><div class="pills"><span class="pill">Branding</span><span class="pill">Packaging</span><span class="pill">CI</span></div></div>
+  <p class="pc-desc">Full-Spectrum Branding f&uuml;r eine neue Getr&auml;nkemarke: Corporate Identity, Verpackungsdesign, Produktfotografie und Markenpositionierung von Null auf Marktreife.</p>
+</a>
+</div>
+
+<!-- 4: Major Project -->
+<a class="pc rv" href="#">
+  <span class="pc-cl green">2024</span>
+  <div class="pc-img"><img src="https://cdn.myportfolio.com/54ead3db-6601-4fb9-8aec-e32e07141dba/08ed8e6b-3bac-4dd1-9ace-2e694cb6b4c5_rwc_0x115x1690x952x32.png?h=0941fe7e4f40ea5fc4c6ec3462bc7ac3" alt="Major Project 2024" loading="lazy"></div>
+  <div class="pc-bar"><h3>Graphic Design Major Project</h3><div class="pills"><span class="pill">Konzept</span><span class="pill">Multi-Format</span><span class="pill">Editorial</span></div></div>
+  <p class="pc-desc">Umfangreiches Abschlussprojekt mit Multi-Format-Ansatz: Konzeption, Editorial Design und Umsetzung &uuml;ber Print, Digital und Branding hinweg. Strategisch durchdacht, visuell kompromisslos.</p>
+</a>
+
+<!-- 5 + 6: Grünes Kreuz & Resani -->
+<div class="pp">
+<a class="pc rv" href="#">
+  <span class="pc-cl red">Completed 2023</span>
+  <div class="pc-img"><img src="https://cdn.myportfolio.com/54ead3db-6601-4fb9-8aec-e32e07141dba/8c92bb42-6778-4eef-a6c4-4fe731acb676_rwc_0x192x3840x2164x32.png?h=3373d1f22771b629b14f004d773122e2" alt="Grünes Kreuz" loading="lazy"></div>
+  <div class="pc-bar"><h3>Gr&uuml;nes Kreuz</h3><div class="pills"><span class="pill">Marketing</span><span class="pill">Design</span><span class="pill">Print</span></div></div>
+  <p class="pc-desc">Ganzheitliche Grafikdesign- und Marketing-Betreuung f&uuml;r den &ouml;sterreichischen Gesundheitsverband. Entwicklung von Kampagnenmaterialien, Print-Produktionen und digitalen Assets.</p>
+</a>
+<a class="pc rv" href="#">
+  <span class="pc-cl red">Completed 2021</span>
+  <div class="pc-img"><img src="https://cdn.myportfolio.com/54ead3db-6601-4fb9-8aec-e32e07141dba/f2344e0d-5b1d-408a-abbd-bfa4c99c25f2_rwc_0x51x537x302x32.jpg?h=2523f36f303e294cdca46f67cb97f4d2" alt="Resani" loading="lazy"></div>
+  <div class="pc-bar"><h3>Resani Hand Sanitizer</h3><div class="pills"><span class="pill">Packaging</span><span class="pill">Product</span></div></div>
+  <p class="pc-desc">Produktdesign und Verpackungsgestaltung f&uuml;r eine Handdesinfektions-Marke. Vom Markenkonzept &uuml;ber das Etikettendesign bis zur druckfertigen Produktion.</p>
+</a>
+</div>
+
+<!-- 7 + 8: Primonia & Spotify -->
+<div class="pp">
+<a class="pc rv" href="#">
+  <span class="pc-cl red">Completed 2023</span>
+  <div class="pc-img"><img src="https://cdn.myportfolio.com/54ead3db-6601-4fb9-8aec-e32e07141dba/0e6371bb-81ac-4fa5-82e3-9a572c755c2f_rwc_0x0x1396x787x32.jpg?h=e8a46d2e85ac2a8ac996b87541ec29c0" alt="Primonia" loading="lazy"></div>
+  <div class="pc-bar"><h3>Primonia Design Process</h3><div class="pills"><span class="pill">CI</span><span class="pill">Brand Guidelines</span></div></div>
+  <p class="pc-desc">Kompletter Brand-Design-Prozess: Entwicklung von Logo, Farbsystem, Typografie und umfassenden Brand Guidelines. Dokumentation des gesamten kreativen Prozesses von der Recherche bis zum finalen Styleguide.</p>
+</a>
+<a class="pc rv" href="#">
+  <span class="pc-cl red">Concept 2022</span>
+  <div class="pc-img"><img src="https://cdn.myportfolio.com/54ead3db-6601-4fb9-8aec-e32e07141dba/440d1d9d-4c49-4505-b768-3ba3ef998175_rwc_0x157x719x405x32.png?h=64e94e3ad58e629998cf131d041e4140" alt="Spotify Concept" loading="lazy"></div>
+  <div class="pc-bar"><h3>Spotify&copy; Concept</h3><div class="pills"><span class="pill">UI/UX</span><span class="pill">Concept</span></div></div>
+  <p class="pc-desc">UI/UX Design-Konzept f&uuml;r Spotify: Exploration neuer Interface-Ans&auml;tze, Feature-Visualisierungen und User-Experience-Optimierungen als konzeptionelle Studie.</p>
+</a>
+</div>
+
+<!-- 9 + 10: Art Club & WeMedia -->
+<div class="pp">
+<a class="pc rv" href="#">
+  <span class="pc-cl red">Completed 2023</span>
+  <div class="pc-img"><img src="https://cdn.myportfolio.com/54ead3db-6601-4fb9-8aec-e32e07141dba/1e2b85eb-ff56-40ed-94f2-6edb98221c9b_carw_16x9x32.png?h=d416b846519b4d0a284649c684c7fe8d" alt="Art Club Magazine" loading="lazy"></div>
+  <div class="pc-bar"><h3>Art_Club Magazine</h3><div class="pills"><span class="pill">Editorial</span><span class="pill">Print</span></div></div>
+  <p class="pc-desc">Konzeption und Gestaltung eines Kunst- und Kulturmagazins. Layout-Design, Typografie-System, Cover-Gestaltung und Druckvorstufe f&uuml;r eine komplette Printpublikation.</p>
+</a>
+<a class="pc rv" href="#">
+  <span class="pc-cl red">Completed 2019</span>
+  <div class="pc-img"><img src="https://cdn.myportfolio.com/54ead3db-6601-4fb9-8aec-e32e07141dba/178887f9-8ee4-48a4-abb9-bdb1b0342ffa_rwc_0x192x3840x2164x32.png?h=cc4f8130b12d304ea590699b9fe28377" alt="WeMedia" loading="lazy"></div>
+  <div class="pc-bar"><h3>WEMEDIA</h3><div class="pills"><span class="pill">Branding</span><span class="pill">Digital</span></div></div>
+  <p class="pc-desc">Brand Identity und digitale Pr&auml;senz f&uuml;r ein Medienunternehmen. Logoentwicklung, visuelle Sprache und Implementierung &uuml;ber alle digitalen Touchpoints.</p>
+</a>
+</div>
+
+<!-- 11 + 12: Curlz & VaLea -->
+<div class="pp">
+<a class="pc rv" href="#">
+  <span class="pc-cl red">Completed 2023</span>
+  <div class="pc-img"><img src="https://cdn.myportfolio.com/54ead3db-6601-4fb9-8aec-e32e07141dba/f1b77f80-256b-47a9-ba50-93af84e9e8be_rwc_0x0x665x374x32.jpg?h=b0c1b09bbba7222a2a84557887786b49" alt="Curlz Cereal" loading="lazy"></div>
+  <div class="pc-bar"><h3>CURLZ Cereal</h3><div class="pills"><span class="pill">Packaging</span><span class="pill">Branding</span></div></div>
+  <p class="pc-desc">Markenentwicklung und Verpackungsdesign f&uuml;r ein Cerealien-Produkt. Playful Branding mit durchdachtem Shelf-Impact und konsistenter visueller Sprache.</p>
+</a>
+<a class="pc rv" href="#">
+  <span class="pc-cl red">Completed 2020</span>
+  <div class="pc-img"><img src="https://cdn.myportfolio.com/54ead3db-6601-4fb9-8aec-e32e07141dba/82820a36-fb09-4291-b598-ede6316196bf_rwc_0x0x1916x1080x32.jpg?h=ef1cf39f4c4ae0c75c3b52316c318de4" alt="VaLea Clinical Trials" loading="lazy"></div>
+  <div class="pc-bar"><h3>VaLea Clinical Trials</h3><div class="pills"><span class="pill">Logo</span><span class="pill">Medical</span></div></div>
+  <p class="pc-desc">Logoentwicklung und Corporate Identity f&uuml;r ein klinisches Forschungsunternehmen. Seri&ouml;se, vertrauensw&uuml;rdige Markensprache f&uuml;r den medizinischen Sektor.</p>
+</a>
+</div>
+
+<!-- 13: Profalting -->
+<a class="pc rv" href="#">
+  <span class="pc-cl red">Completed 2020</span>
+  <div class="pc-img"><img src="https://cdn.myportfolio.com/54ead3db-6601-4fb9-8aec-e32e07141dba/5feba5e7-aad9-45c9-92ab-0b3db9cfc7ae_rwc_0x174x1920x1082x32.jpg?h=0542b8c176016513dbd8fb661c062d64" alt="Profalting GmbH" loading="lazy"></div>
+  <div class="pc-bar"><h3>Profalting GmbH</h3><div class="pills"><span class="pill">Logo</span><span class="pill">Corporate</span><span class="pill">Branding</span></div></div>
+  <p class="pc-desc">Komplettes Logo- und Corporate-Design f&uuml;r ein &ouml;sterreichisches Unternehmen. Entwicklung einer professionellen Markenidentit&auml;t mit klarem, technischem Erscheinungsbild.</p>
+</a>
+
+</div>
+
+<div class="sh rv"><h2>Operational Framework</h2><span class="cnt">04 Phases</span></div>
+<div class="process rv"><div class="pg">
+  <div class="ps"><div class="pn">Phase 01</div><h3>Recon &amp; Analysis</h3><p>Deep-Dive in deine Marke, Zielgruppe und Wettbewerb. Wir verstehen, bevor wir gestalten.</p></div>
+  <div class="ps"><div class="pn">Phase 02</div><h3>Strategy &amp; CI</h3><p>Brand-Architektur, Corporate Identity, Tonality und visuelle Sprache &mdash; das Fundament.</p></div>
+  <div class="ps"><div class="pn">Phase 03</div><h3>Execution</h3><p>Design, Webentwicklung, Content, Print &mdash; alles aus einer Hand, pixel-perfekt.</p></div>
+  <div class="ps"><div class="pn">Phase 04</div><h3>Ongoing Ops</h3><p>Laufende Marketing-Begleitung, Social, Kampagnen. Wir bleiben dran bis es sitzt.</p></div>
+</div></div>
+
+<section id="about"><div class="about rv">
+  <div class="ap"><img src="https://cdn.myportfolio.com/54ead3db-6601-4fb9-8aec-e32e07141dba/038c0d2a-f1e6-44d4-8900-73c5fe485849_rwc_0x0x1100x1495x4096.png?h=382eaee755ad111a831b7218fce0646b" alt="Philipp Jovanoski" style="object-fit:cover"></div>
+  <div class="at">
+    <div class="al">Operative Intelligence</div>
+    <h2>Philipp Jovanoski &mdash; der Kopf hinter <em>PYXEL.</em></h2>
+    <p>Kein Team von 50 Leuten. Ein Operator mit absolutem Fokus. Ich &uuml;bernehme wenige Projekte gleichzeitig &mdash; daf&uuml;r bekommt jedes einzelne meine volle Aufmerksamkeit.</p>
+    <p>Full-Spectrum Design Operations: Rebranding, Corporate Identity, Webdesign, laufendes Marketing &mdash; alles verzahnt, alles aus einer Hand.</p>
+    <div class="sr"><div class="st"><h4>14</h4><p>Operations</p></div><div class="st"><h4>100%</h4><p>Full-Spectrum</p></div><div class="st"><h4>Wien</h4><p>Base of Ops</p></div></div>
+  </div>
+</div></section>
+
+<section id="contact" class="contact"><div class="cg">
+  <div class="cl rv"><h2>Ready to <em>deploy?</em></h2><p>Begrenzte Kapazit&auml;t. Wenn du bereit bist, deine Marke auf ein neues Level zu bringen &mdash; melde dich.</p><div class="ck"><a href="mailto:hello@pyxel.at"><span class="cb">Comms</span>hello@pyxel.at</a><a href="https://www.linkedin.com/in/philipp-jovanoski-5769a9234/" target="_blank"><span class="cb">Intel</span>LinkedIn</a><a href="#"><span class="cb">Base</span>Wien, &Ouml;sterreich</a></div></div>
+  <form class="cf rv" onsubmit="event.preventDefault();this.querySelector('.btn-s').textContent='Transmitted \u2713'"><div class="fgr"><div class="fg"><label>Callsign</label><input type="text" placeholder="Dein Name" required></div><div class="fg"><label>Frequency</label><input type="email" placeholder="deine@email.at" required></div></div><div class="fg"><label>Mission Type</label><select><option value="">Select operation&hellip;</option><option>Full Rebranding + CI</option><option>Webdesign + UI/UX</option><option>Marketing Operations</option><option>Print + Packaging</option><option>Full-Spectrum Package</option></select></div><div class="fg"><label>Briefing</label><textarea placeholder="Beschreibe dein Projekt..." rows="4" required></textarea></div><button type="submit" class="btn-s">Transmit <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button></form>
+</div></section>
+
+<footer>
+  <div class="fc"><h4>PYXEL</h4><p>&copy; 2026 PYXEL</p><p>Strategic Design Ops</p></div>
+  <div class="fc"><h4>Navigation</h4><a href="#">Home</a><a href="#proj">Operations</a><a href="#about">Intel</a><a href="#contact">Comms</a></div>
+  <div class="fc"><h4>Channels</h4><a href="https://www.linkedin.com/in/philipp-jovanoski-5769a9234/" target="_blank">LinkedIn</a><a href="https://www.instagram.com/pgrafikdesign/" target="_blank">Instagram</a><a href="mailto:hello@pyxel.at">Email</a></div>
+  <div class="fb"><span>48.2082&deg;N 16.3738&deg;E &mdash; Wien, Austria</span><button class="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">Back to top &uarr;</button></div>
+</footer>
+
+<script>
+const dot=document.getElementById('cD'),ring=document.getElementById('cR');let mx=0,my=0,dx=0,dy=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+(function ac(){dx+=(mx-dx)*.2;dy+=(my-dy)*.2;rx+=(mx-rx)*.08;ry+=(my-ry)*.08;dot.style.left=dx+'px';dot.style.top=dy+'px';ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(ac)})();
+document.querySelectorAll('a,button,.pc,.bp,.nm,.btt,.btn-s,.m-ov-c').forEach(el=>{el.addEventListener('mouseenter',()=>document.body.classList.add('c-h'));el.addEventListener('mouseleave',()=>document.body.classList.remove('c-h'))});
+
+window.addEventListener('load',()=>{const i=document.getElementById('intro');i.classList.add('p1');setTimeout(()=>{i.classList.add('out');setTimeout(()=>{i.style.display='none';document.getElementById('nav').classList.add('show');sH();['h1','h2','h3','h4'].forEach((id,j)=>{setTimeout(()=>document.getElementById(id).classList.add('on'),j*150+400)})},700)},2200)});
+
+function sH(){document.getElementById('hL').classList.add('in');const w=document.querySelectorAll('.wi');w.forEach((e,i)=>setTimeout(()=>e.classList.add('in'),200+i*80));setTimeout(()=>document.getElementById('hS').classList.add('in'),200+w.length*80+200);setTimeout(()=>document.getElementById('hM').classList.add('in'),200+w.length*80+400);setTimeout(()=>document.getElementById('hSc').classList.add('in'),200+w.length*80+800)}
+
+function tM(){const m=document.getElementById('mOv');if(m.classList.contains('open'))m.classList.remove('open');else{m.querySelectorAll('.ml a').forEach(a=>{a.style.animation='none';a.offsetHeight;a.style.animation=''});m.classList.add('open')}}
+function cS(e,id){e.preventDefault();tM();setTimeout(()=>{if(id==='top')window.scrollTo({top:0,behavior:'smooth'});else document.getElementById(id)?.scrollIntoView({behavior:'smooth'})},350)}
+
+const obs=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting)e.target.classList.add('v')})},{threshold:.06,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
+document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',e=>{const h=a.getAttribute('href');if(h.length>1){e.preventDefault();document.querySelector(h)?.scrollIntoView({behavior:'smooth'})}})});
+</script>
+</body>
+</html>
